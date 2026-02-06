@@ -1,11 +1,14 @@
 # Checkpoint
 
-Lightweight, local checkpoints for a git repo. It snapshots tracked + untracked files (excluding ignored files) into `.checkpoints`, and lets you restore later.
+Lightweight, local checkpoints for a git repo. It snapshots tracked + untracked files (excluding ignored files) into `.checkpoints/`, and lets you (or your AI Agent) restore later.
 
 ## Install
 
+#### Prerequisites
+1. [Go](https://go.dev/) >= 1.25.6 in $PATH
+
 ```bash
-go build -o checkpoint
+go install github.com/LukeTarr/checkpoint@latest
 ```
 
 ## Usage
@@ -13,18 +16,30 @@ go build -o checkpoint
 Run commands from inside a git repo.
 
 ```bash
-./checkpoint push [name]
-./checkpoint pop [name]
-./checkpoint list
-./checkpoint nuke
+#create checkpoint
+checkpoint push [name]
+#restore from checkpoint
+checkpoint pop [name]
+#show current repo checkpoints
+checkpoint list
+#remove all current repo checkpoints
+checkpoint nuke
+#outputs shell script for completions (pipe into shell file in completions directory to get tab auto complete when invoking)
+checkpoint completion
 ```
 
-### Commands
+## Building
 
-- `push [name]` create a checkpoint. Use `--force` to overwrite an existing name.
-- `pop [name]` restore a checkpoint (defaults to latest). Prompts before overwriting files.
-- `list` show checkpoints with timestamps and quick stats.
-- `nuke` delete all checkpoints (with confirmation).
+#### Prerequisites
+1. [git](https://git-scm.com/)
+2. [Go](https://go.dev/) >= 1.25.6 in $PATH
+
+```bash
+git clone https://github.com/LukeTarr/checkpoint.git
+cd checkpoint
+#will output a ./checkpoint executable file
+go build
+```
 
 ## Notes
 

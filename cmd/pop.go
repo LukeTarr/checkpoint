@@ -52,44 +52,8 @@ func runPop(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	checkpointFiles, err := checkpoints.ListCheckpointFiles(checkpointDir)
-	if err != nil {
+	if err := checkpoints.Restore(root, name); err != nil {
 		return err
-	}
-
-	currentFiles, err := checkpoints.ListRepoFiles(root)
-	if err != nil {
-		return err
-	}
-
-	checkpointSet := make(map[string]struct{}, len(checkpointFiles))
-	for _, rel := range checkpointFiles {
-		checkpointSet[rel] = struct{}{}
-	}
-	requiredDirs := checkpoints.RequiredDirs(checkpointFiles)
-	removalDirs := make([]string, 0, len(currentFiles))
-
-	for _, rel := range currentFiles {
-		if _, exists := checkpointSet[rel]; exists {
-			continue
-		}
-		path := filepath.Join(root, rel)
-		if err := os.Remove(path); err != nil {
-			return fmt.Errorf("remove '%s': %w", rel, err)
-		}
-		removalDirs = append(removalDirs, filepath.Dir(rel))
-	}
-
-	if err := checkpoints.RemoveEmptyDirs(root, removalDirs, requiredDirs); err != nil {
-		return err
-	}
-
-	for _, rel := range checkpointFiles {
-		srcPath := filepath.Join(checkpointDir, rel)
-		dstPath := filepath.Join(root, rel)
-		if err := checkpoints.CopyEntry(srcPath, dstPath); err != nil {
-			return fmt.Errorf("restore '%s': %w", rel, err)
-		}
 	}
 
 	fmt.Printf("Restored checkpoint '%s'\n", name)

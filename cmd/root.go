@@ -18,5 +18,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(pushCmd, popCmd, listCmd, nukeCmd)
+	rootCmd.AddCommand(pushCmd, popCmd, listCmd, nukeCmd, tuiCmd)
 }

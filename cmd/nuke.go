@@ -36,8 +36,8 @@ func runNuke(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := os.RemoveAll(checkpointsRoot); err != nil {
-		return fmt.Errorf("delete checkpoints: %w", err)
+	if err := checkpoints.DeleteAll(root); err != nil {
+		return err
 	}
 
 	fmt.Println("All checkpoints deleted")

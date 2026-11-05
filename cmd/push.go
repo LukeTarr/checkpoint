@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/LukeTarr/checkpoint/internal/checkpoints"
 	"github.com/spf13/cobra"
@@ -45,52 +42,14 @@ func runPush(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	checkpointsRoot := filepath.Join(root, checkpoints.DirName)
-	checkpointDir := filepath.Join(checkpointsRoot, name)
-
-	if _, err := os.Stat(checkpointDir); err == nil {
-		if !force {
-			return fmt.Errorf("checkpoint '%s' already exists (use --force to overwrite)", name)
-		}
-		if err := os.RemoveAll(checkpointDir); err != nil {
-			return fmt.Errorf("remove existing checkpoint: %w", err)
-		}
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("check checkpoint: %w", err)
-	}
-
-	if err := os.MkdirAll(checkpointsRoot, checkpoints.DirPerm); err != nil {
-		return fmt.Errorf("create checkpoints directory: %w", err)
-	}
-	if err := os.MkdirAll(checkpointDir, checkpoints.DirPerm); err != nil {
-		return fmt.Errorf("create checkpoint: %w", err)
-	}
-
-	files, err := checkpoints.ListRepoFiles(root)
-	if err != nil {
+	if err := checkpoints.Create(root, name, force); err != nil {
 		return err
 	}
 
-	for _, rel := range files {
-		srcPath := filepath.Join(root, rel)
-		dstPath := filepath.Join(checkpointDir, rel)
-		if err := checkpoints.CopyEntry(srcPath, dstPath); err != nil {
-			return fmt.Errorf("copy '%s': %w", rel, err)
-		}
-	}
-
-	meta := checkpoints.Meta{
-		Name:      name,
-		CreatedAt: time.Now().UTC(),
-	}
-	if err := checkpoints.WriteMeta(checkpointDir, meta); err != nil {
-		return err
-	}
-
-	fmt.Printf("Checkpoint '%s' created at %s\n", name, checkpointDir)
+	fmt.Printf("Checkpoint '%s' created at %s\n", name, filepath.Join(root, checkpoints.DirName, name))
 	return nil
 }
 
 func defaultCheckpointName() string {
-	return fmt.Sprintf("checkpoint-%s", time.Now().UTC().Format("20060102-150405"))
+	return checkpoints.DefaultName()
 }
